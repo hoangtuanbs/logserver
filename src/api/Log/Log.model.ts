@@ -1,5 +1,5 @@
 // src/entity/Log.ts
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, Index } from "typeorm";
 
 @Entity("log")
 export class Log
@@ -8,6 +8,7 @@ export class Log
     id: number;
 
     @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP", nullable: false })
+    @Index()
     inserted_at: Date;
 
     @Column({ type: "json", nullable: false })
