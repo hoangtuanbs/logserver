@@ -1,7 +1,7 @@
 import express from 'express';
 import { logRouter } from './api/Log/';
-import { BASE_PATH, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, ENVIRONMENT } from './config';
-
+import { BASE_PATH, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, ENVIRONMENT, USE_COMPRESSION } from './config';
+import compression from 'compression';
 
 import 'reflect-metadata';
 import { AppDataSource } from './dataSource/dataSource';
@@ -10,16 +10,22 @@ class App
 {
     public express = express();
     public basePath = BASE_PATH || '';
+    public userCompression = USE_COMPRESSION || false;
+
     constructor()
     {
         this.init();
     }
 
-    private init()
+    public async init()
     {
         this.express.use(express.json());
-
-        this.initializeDb();
+        this.express.use(express.urlencoded({ extended: true }));
+        if (this.userCompression)
+        {
+            this.express.use(compression());
+        }
+        await this.initializeDb();
         this.mountRoutes();
     }
 
