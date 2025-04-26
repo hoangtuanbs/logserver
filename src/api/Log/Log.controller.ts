@@ -6,8 +6,9 @@ import { HttpStatusCode } from '../../enums';
 import { Request, Response, NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
+import { LogService } from './Log.service';
 
-const defaultPageSize = 1000;
+const defaultPageSize = 10;
 
 /**
  * Log controller
