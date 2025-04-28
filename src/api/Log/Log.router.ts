@@ -9,7 +9,7 @@ const call = baseHandler;
 const LogService = new LogController();
 
 router.get('/', call(LogService.getAllLogs, (req, _res, _next) => [req.params.id]));
-router.post('/', call(LogService.insertLog, (req, _res, _next) => [req.body.json]));
+router.post('/', call(LogService.insertLog, (req, _res, _next) => [req.body.json, req.body.inserted_at]));
 
 router.get('/:id', call(LogService.getLogById, (req, _res, _next) => [req.params.id]));
 

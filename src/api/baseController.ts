@@ -9,10 +9,9 @@ export class BaseController
         data,
         message = 'OK',
         statusCode = HttpStatusCode.OK,
-        status = true,
         pagination = null
     }: BaseApiResponse)
     {
-        return { data, message, statusCode, status, pagination };
+        return { data, message, statusCode, pagination };
     }
 }

@@ -22,7 +22,7 @@ A special server to maintain logs entries
   Example response:
   ```json
   {
-    "status":true,"message":"OK","data":[{"id":1,"inserted_at":"2025-04-26T05:55:30.923Z","json":{"message":"test 0"}},
+    "data":[{"id":1,"inserted_at":"2025-04-26T05:55:30.923Z","json":{"message":"test 0"}},
     {"id":2,"inserted_at":"2025-04-26T05:55:30.931Z","json":{"message":"test 1"}},
     {"id":3,"inserted_at":"2025-04-26T05:55:30.941Z","json":{"message":"test 2"}},
     {"id":4,"inserted_at":"2025-04-26T05:55:30.948Z","json":{"message":"test 3"}},
@@ -32,6 +32,7 @@ A special server to maintain logs entries
     {"id":8,"inserted_at":"2025-04-26T05:55:30.979Z","json":{"message":"test 7"}},
     {"id":9,"inserted_at":"2025-04-26T05:55:30.986Z","json":{"message":"test 8"}},
     {"id":10,"inserted_at":"2025-04-26T05:55:30.994Z","json":{"message":"test 9"}}],
+    "message":"OK",
     "pagination":{"total":20,"page":1,"limit":10,"totalPages":2}
   }
   ```
