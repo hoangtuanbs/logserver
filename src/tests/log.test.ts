@@ -1,6 +1,5 @@
 import supertest from "supertest";
 import { AppDataSource } from "../dataSource/dataSource";
-import express from "express";
 import app from '../server';
 
 describe("Log API", () => {

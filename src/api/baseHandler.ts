@@ -24,7 +24,6 @@ export const baseHandler = (promise: (...any) => Promise<BaseApiResponse>, param
                 return res.status(result.statusCode)
                     .json(
                     {
-                        status: result.status,
                         message: result.message,
                         data: result.data,
                         pagination: result.pagination,
@@ -33,7 +32,6 @@ export const baseHandler = (promise: (...any) => Promise<BaseApiResponse>, param
             return res.status(result.statusCode)
                 .json(
                 {
-                    status: result.status,
                     message: result.message,
                     data: result.data,
                 });

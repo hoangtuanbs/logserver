@@ -1,40 +1,24 @@
-// src/db/GenericRepository.ts
+// src/api/baseService.ts
 import { Repository, DeepPartial, FindManyOptions } from "typeorm";
 import { AppDataSource } from "../dataSource/dataSource";
 
 export class GenericRepository<T>
 {
-    private repository: Repository<T>;
+    public repository: Repository<T>;
 
     constructor(entity: new () => T)
     {
         this.repository = AppDataSource.getRepository(entity);
     }
 
-    async insert(data: DeepPartial<T>): Promise<T>
+    async save(data: DeepPartial<T>): Promise<T>
     {
-        const entity = this.repository.create(data);
-        return await this.repository.save(entity);
+        return await this.repository.save(data);
     }
 
     async list(options?: FindManyOptions<T>): Promise<T[]>
     {
         return await this.repository.find(options);
-    }
-
-    async listByDateRange(startDate: Date, endDate: Date): Promise<T[]>
-    {
-        return await this.repository.find(
-        {
-            where:
-            {
-                inserted_at:
-                {
-                    $gte: startDate,
-                    $lte: endDate
-                }
-            }
-        });
     }
 
     async listPage(page: number, limit: number): Promise<T[]>
