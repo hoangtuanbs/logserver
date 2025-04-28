@@ -8,6 +8,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 import { LogService } from './Log.service';
 
+
 const defaultPageSize = 10;
 
 /**
@@ -22,14 +23,26 @@ export class LogController extends BaseController
      * Creates an instance of LogController.
      * @memberof LogController
      */
-    private logRepository = AppDataSource.getRepository(Log);
+    constructor()
+    {
+        super();
+        this.logService = new LogService();
+    }
 
+    private logService;
+
+    /**
+     *
+     * @param req
+     * @param res
+     * @param next
+     * @returns
+     */
     public getAllLogs = async (req: Request, res: Response, next: NextFunction) =>
     {
         try
         {
             let pageStr = undefined;
-
             let usePaging = false;
             let page = 1;
             let pageSize = defaultPageSize;
@@ -46,11 +59,19 @@ export class LogController extends BaseController
                 pageSize = parseInt(req.query.pageSize as string || defaultPageSize.toString(), 10);
             }
 
-            const [logs, total] = await this.logRepository.createQueryBuilder('logs')
-                .skip((page - 1) * pageSize)
-                .take(pageSize)
-                .getManyAndCount();
+            if (page < 1 || pageSize < defaultPageSize)
+            {
+                return this.sendResponse(
+                {
+                    message: "Invalid page or pageSize",
+                    statusCode: HttpStatusCode.BAD_REQUEST
+                });
+            }
 
+            const [logs, total] = await this.logService.getLogs(page, pageSize);
+
+            // Response with pagination if needed (usePaging is true
+            // or total number of logs is greater than pageSize)
             if (usePaging || total > pageSize)
             {
                 return this.sendResponse(
@@ -75,27 +96,46 @@ export class LogController extends BaseController
             });
         }
     }
+
     /**
      * Insert log
      *
-     * @param {any} json
-     * @returns {Promise<Response>}
+     * @param {Log} json: The JSON object to be inserted as a log entry.
+     * - json: (required) The message to be logged.
+     * - inserted_at: (optional) The timestamp of when the log was created.
      * @memberof LogController
      */
-
-    public insertLog = async (json: any) =>
+    public insertLog = async (json: any, inserted_at: any) =>
     {
         try
         {
             if (!json || typeof json !== "object")
             {
-                return this.sendResponse({ message: "Valid JSON object is required", statusCode: HttpStatusCode.BAD_REQUEST });
+                return this.sendResponse(
+                    {
+                        message: "Valid JSON object is required",
+                        statusCode: HttpStatusCode.BAD_REQUEST
+                    });
             }
 
             const log = new Log();
             log.json = json;
 
-            const savedLog = await this.logRepository.save(log);
+            if (inserted_at)
+            {
+                const date = new Date(inserted_at);
+                if (isNaN(date.getTime()))
+                {
+                    return this.sendResponse(
+                        {
+                            message: "Invalid date format",
+                            statusCode: HttpStatusCode.BAD_REQUEST
+                        });
+                }
+                log.inserted_at = date;
+            }
+
+            const savedLog = await this.logService.save(log);
             return this.sendResponse(
             {
                 data: savedLog,
@@ -103,87 +143,49 @@ export class LogController extends BaseController
             });
         } catch (error)
         {
-            return this.sendResponse({ message: "Failed to insert log", statusCode: HttpStatusCode.INTERNAL_SERVER_ERROR });
+            return this.sendResponse(
+                {
+                    message: "Failed to insert log",
+                    statusCode: HttpStatusCode.INTERNAL_SERVER_ERROR
+                });
         }
     }
 
     /**
-     * Get log by ID
-     *
-     * @param {number} id
-     * @returns {Promise<Response>}
-     * @memberof LogController
+     * Get logs by id
+     * @param {string} id: The ID of the log entry to be fetched.
      */
-    public getLogById = async (id: number) =>
+    public getLogById = async (req: Request<ParamsDictionary, any, any, ParsedQs>, res: Response, next: NextFunction) =>
     {
         try
         {
-            const log = await this.logRepository.findOneBy({ id });
+            if (req.params === undefined || req.params.id === undefined)
+            {
+                return this.sendResponse(
+                {
+                    message: "Log ID is required",
+                    statusCode: HttpStatusCode.BAD_REQUEST
+                });
+            }
+
+            const id = req.params.id;
+            const log = await this.logService.getById(id);
             if (!log)
             {
-                return this.sendResponse({ message: "Log not found", statusCode: HttpStatusCode.NOT_FOUND });
+                return this.sendResponse(
+                {
+                    message: "Log not found",
+                    statusCode: HttpStatusCode.NOT_FOUND
+                });
             }
             return this.sendResponse({ data: log });
         } catch (error)
         {
-            return this.sendResponse({ message: "Failed to fetch log: " + error.message, statusCode: HttpStatusCode.INTERNAL_SERVER_ERROR });
-        }
-    }
-
-    /**
-     * Get logs by date
-     *
-     * @param {Date} date
-     * @returns {Promise<Response>}
-     * @memberof LogController
-     */
-    public getLogsByDate = async (date: Date) =>
-    {
-        try
-        {
-            const beginningTime = new Date(date);
-            beginningTime.setUTCHours(0, 0, 0, 0);
-
-            const endTime = new Date(date);
-            endTime.setUTCHours(23, 59, 59, 999);
-
-            const logs = this.logRepository.createQueryBuilder("log")
-                .where("log.inserted_at > :date", { beginningTime })
-                .andWhere("log.inserted_at < :endTime", { endTime }).getMany();
-
-            return this.sendResponse({ data: logs });
-        } catch (error)
-        {
-            return this.sendResponse({ message: "Failed to fetch logs: " + error.message, statusCode: HttpStatusCode.INTERNAL_SERVER_ERROR });
-        }
-    }
-
-    /**
-     * Get logs with pagination
-     *
-     * @param {Request} req
-     *     - page - The current page number
-     *     - limit - The number of logs per page
-     * @returns {Promise<Response>}
-     * @memberof LogController
-     */
-    public getLogsWithPagination = async (req: Request<ParamsDictionary, any, any, ParsedQs>, res: Response, next: NextFunction) =>
-    {
-        try
-        {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || defaultPageSize;
-
-            const [logs, total] = await this.logRepository.findAndCount(
+            return this.sendResponse(
             {
-                skip: (page - 1) * limit,
-                take: limit,
+                message: "Failed to fetch log: " + error.message,
+                statusCode: HttpStatusCode.INTERNAL_SERVER_ERROR
             });
-
-            return this.sendResponse({ data: logs, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } });
-        } catch (error)
-        {
-            next(error);
         }
     }
 }
