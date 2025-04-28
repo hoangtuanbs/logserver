@@ -7,7 +7,8 @@ A special server to maintain logs entries
 - Example payload:
   ```json
   {
-    "messages": string
+    "json": { "messages": "string" },
+    "inserted_at": "Date"
   }
   ```
 - Example response:
@@ -31,7 +32,8 @@ A special server to maintain logs entries
     {"id":8,"inserted_at":"2025-04-26T05:55:30.979Z","json":{"message":"test 7"}},
     {"id":9,"inserted_at":"2025-04-26T05:55:30.986Z","json":{"message":"test 8"}},
     {"id":10,"inserted_at":"2025-04-26T05:55:30.994Z","json":{"message":"test 9"}}],
-    "pagination":{"total":20,"page":1,"limit":10,"totalPages":2}}
+    "pagination":{"total":20,"page":1,"limit":10,"totalPages":2}
+  }
   ```
 
 <!-- GETTING STARTED -->
