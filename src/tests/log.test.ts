@@ -49,6 +49,24 @@ describe("Log API", () => {
         expect(response.body.data.inserted_at).toBeDefined();
     });
 
+    /**
+     * Test for inserting a log entry with date
+     * The test should send a POST request to the API with a valid JSON object.
+     */
+    it("should insert a log entry with date", async () =>
+        {
+            const testdate = new Date("2023-01-01T10:00:00Z");
+            const response = await supertest(app)
+                .post("/api/logs")
+                .send({ json: { message: "test" }, inserted_at: testdate });
+
+            expect(response.status).toBe(201);
+            expect(response.body).toHaveProperty("data");
+            expect(response.body.data.json).toEqual({ message: "test" });
+            expect(response.body.data.inserted_at).toBeDefined();
+            expect(new Date(response.body.data.inserted_at).getTime()).toEqual(testdate.getTime());
+        });
+
     it("should return 400 for invalid JSON", async () =>
     {
         const response = await supertest(app)
