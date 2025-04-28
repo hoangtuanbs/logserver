@@ -11,7 +11,7 @@ export class GenericRepository<T>
         this.repository = AppDataSource.getRepository(entity);
     }
 
-    async save(data: DeepPartial<T>): Promise<T>
+    async save(data: any): Promise<T>
     {
         return await this.repository.save(data);
     }

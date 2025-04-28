@@ -33,9 +33,10 @@ export class LogController extends BaseController
 
     /**
      *
-     * @param req
+     * @param req Request should contain the following:
+     * - page: (optional) The page number to fetch (optional, default is 1).
+     * - pageSize: (optional) The number of logs per page (optional, default is 10).
      * @param res
-     * @param next
      * @returns
      */
     public getAllLogs = async (req: Request, res: Response, next: NextFunction) =>

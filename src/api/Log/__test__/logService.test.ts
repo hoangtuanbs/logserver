@@ -1,22 +1,17 @@
 import { Log } from '..';
 import { LogService } from '..';
 import { describe, it, expect } from '@jest/globals';
-import { Repository } from "typeorm";
 import { AppDataSource } from "../../../dataSource/dataSource";
 
 
 describe("LogService", () =>
 {
     let logService: LogService;
-    let logRepository: Repository<Log>;
 
     beforeAll(async () =>
     {
         await AppDataSource.initialize();
-        logRepository = AppDataSource.getRepository(Log);
         logService = new LogService();
-
-        (logService as any).repository = logRepository;
     });
 
     afterAll(async () =>
@@ -34,9 +29,9 @@ describe("LogService", () =>
         it("should return a log", async () =>
         {
             // Insert test logs
-            const log1 = logRepository.create({ json: { message: "log1" }});
+            const log1 = { json: { message: "log1" }};
 
-            await logRepository.save(log1);
+            await logService.save(log1);
 
             const [logs, count] = await logService.getLogs(1, 10, true);
 
@@ -47,9 +42,9 @@ describe("LogService", () =>
 
         it("should return paginated logs in ascending order", async () =>
         {
-            const log1 = logRepository.create({ json: { message: "log1" }, inserted_at: new Date("2023-01-01T10:00:00Z") });
-            const log2 = logRepository.create({ json: { message: "log2" }, inserted_at: new Date("2023-01-02T10:00:00Z") });
-            await logRepository.save([log1, log2]);
+            const log1 = { json: { message: "log1" }, inserted_at: new Date("2023-01-01T10:00:00Z") };
+            const log2 = { json: { message: "log2" }, inserted_at: new Date("2023-01-02T10:00:00Z") };
+            await logService.save([log1, log2]);
 
             const [logs, count] = await logService.getLogs(1, 1, false);
 
@@ -71,10 +66,10 @@ describe("LogService", () =>
     {
         it("should return logs within date range in descending order", async () =>
         {
-            const log1 = logRepository.create({ json: { message: "log1" }, inserted_at: new Date("2023-01-01T10:00:00Z") });
-            const log2 = logRepository.create({ json: { message: "log2" }, inserted_at: new Date("2023-01-02T10:00:00Z") });
-            const log3 = logRepository.create({ json: { message: "log3" }, inserted_at: new Date("2023-01-03T10:00:00Z") });
-            await logRepository.save([log1, log2, log3]);
+            const log1 = { json: { message: "log1" }, inserted_at: new Date("2023-01-01T10:00:00Z") };
+            const log2 = { json: { message: "log2" }, inserted_at: new Date("2023-01-02T10:00:00Z") };
+            const log3 = { json: { message: "log3" }, inserted_at: new Date("2023-01-03T10:00:00Z") };
+            await logService.save([log1, log2, log3]);
 
             const startDate = new Date("2023-01-01T00:00:00Z");
             const endDate = new Date("2023-01-02T23:59:59Z");
@@ -88,9 +83,9 @@ describe("LogService", () =>
 
         it("should return logs within date range in ascending order", async () =>
         {
-            const log1 = logRepository.create({ json: { message: "log1" }, inserted_at: new Date("2023-01-01T10:00:00Z") });
-            const log2 = logRepository.create({ json: { message: "log2" }, inserted_at: new Date("2023-01-02T10:00:00Z") });
-            await logRepository.save([log1, log2]);
+            const log1 = { json: { message: "log1" }, inserted_at: new Date("2023-01-01T10:00:00Z") };
+            const log2 = { json: { message: "log2" }, inserted_at: new Date("2023-01-02T10:00:00Z") };
+            await logService.save([log1, log2]);
 
             const startDate = new Date("2023-01-01T00:00:00Z");
             const endDate = new Date("2023-01-02T23:59:59Z");
@@ -104,8 +99,8 @@ describe("LogService", () =>
 
         it("should return empty array for no logs in date range", async () =>
         {
-            const log1 = logRepository.create({ json: { message: "log1" }, inserted_at: new Date("2023-01-01T10:00:00Z") });
-            await logRepository.save([log1]);
+            const log1 = { json: { message: "log1" }, inserted_at: new Date("2023-01-01T10:00:00Z") };
+            await logService.save([log1]);
 
             const startDate = new Date("2023-02-01T00:00:00Z");
             const endDate = new Date("2023-02-02T23:59:59Z");
